@@ -28,3 +28,22 @@
     text-align: center;
   }
 }
+
+.wireframeButton {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.wireframeButton:hover {
+  background-color: #4b0082;
+}

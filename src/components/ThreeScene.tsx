@@ -1,60 +1,45 @@
 'use client';
-import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import React, { useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import styles from './ThreeScene.module.css';
 
-export const ThreeScene = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
+import Floor from './Floor';
+import MöbiusStrip from './MöbiusStrip';
+import CameraControls from './CameraControls';
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 5;
+export default function ThreeScene() {
+  const [wireframe, setWireframe] = useState(false);
 
-  const renderer = new THREE.WebGLRenderer();
-
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshBasicMaterial({ color: '#fff', wireframe: false });
-  const cube = new THREE.Mesh(geometry, material);
-  const cube2 = new THREE.Mesh(
-    new THREE.BoxGeometry(window.innerWidth, 5, 1),
-    new THREE.MeshBasicMaterial({ color: '#0078D4' })
+  return (
+    <div className={styles.sceneContainer}>
+      <Canvas>
+        <PerspectiveCamera makeDefault position={[0, 2, 0]} fov={75} />
+        <CameraControls speed={5.0} />
+        <ambientLight intensity={0.5} />
+        <spotLight position={[10, 10, 10]} angle={0.5} penumbra={1} />
+        <pointLight position={[-10, -10, -10]} />
+        <MöbiusStrip
+          position={[0, 2, 0]}
+          radius={0.5}
+          tubeRadius={0.2}
+          tubularSegments={96}
+          tubularRadiusSegments={24}
+          wireframe={wireframe}
+          rotation={true}
+          rotationSpeed={2}
+        />
+        <Floor size={30} divisions={50} color="black" />
+        <OrbitControls />
+      </Canvas>
+      <div className={styles.controls}>
+        <div className={styles.instructions}>
+          Use arrow keys to move camera: ↑ (forward), ↓ (backward), ← (left), → (right)
+        </div>
+        <button className={styles.wireframeButton} onClick={() => setWireframe(!wireframe)}>
+          Toggle Wireframe
+        </button>
+      </div>
+    </div>
   );
-  cube2.position.z = -3;
-  scene.add(cube);
-
-  scene.add(cube2);
-
-  const renderScene = () => {
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    cube.position.x = 0.5 * Math.tan(Date.now() * 0.001);
-    renderer.render(scene, camera);
-    requestAnimationFrame(renderScene);
-  };
-
-  const handleResize = () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(width, height);
-  };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize);
-
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      containerRef.current?.appendChild(renderer.domElement);
-
-      renderScene();
-
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    }
-  }, []);
-
-  return <div ref={containerRef} />;
-};
+}

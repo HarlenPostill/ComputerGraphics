@@ -23,6 +23,7 @@ interface Settings {
 
 export default function ThreeScene() {
   const [tubes, setTubes] = useState<TubeData[]>([]);
+  const [controlToggle, setControlToggle] = useState<boolean>();
   const [settings, setSettings] = useState<Settings>({
     wireframe: false,
     movementType: 'turns',
@@ -71,6 +72,10 @@ export default function ThreeScene() {
     setTubes([]);
   };
 
+  const toggleControls = () => {
+    setControlToggle(prev => !prev);
+  };
+
   // Update a specific setting
   const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -106,75 +111,77 @@ export default function ThreeScene() {
           maxDistance={100}
         />
       </Canvas>
-
       <div className={styles.controls}>
-        <div className={styles.controlGroup}>
-          <label>Movement Type</label>
-          <select
-            value={settings.movementType}
-            onChange={e => updateSetting('movementType', e.target.value as MovementType)}
-            className={styles.select}>
-            <option value="straight">Straight Lines</option>
-            <option value="turns">90° Turns</option>
-            <option value="spiral">Spiral</option>
-            <option value="random">Random</option>
-          </select>
-        </div>
-
-        <div className={styles.controlGroup}>
-          <label>Spawn Rate</label>
-          <input
-            type="range"
-            min="1"
-            max="100"
-            step="1"
-            value={settings.spawnRate}
-            onChange={e => updateSetting('spawnRate', parseFloat(e.target.value))}
-            className={styles.slider}
-          />
-          <span>{settings.spawnRate.toFixed(1)} tubes/sec</span>
-        </div>
-
-        <div className={styles.controlGroup}>
-          <label>Movement Speed</label>
-          <input
-            type="range"
-            min="1"
-            max="100"
-            step="1"
-            value={settings.moveSpeed}
-            onChange={e => updateSetting('moveSpeed', parseFloat(e.target.value))}
-            className={styles.slider}
-          />
-          <span>{settings.moveSpeed.toFixed(1)}</span>
-        </div>
-
-        <div className={styles.controlGroup}>
-          <label>Max Tubes</label>
-          <input
-            type="range"
-            min="10"
-            max="50"
-            step="1"
-            value={settings.maxTubes}
-            onChange={e => updateSetting('maxTubes', parseInt(e.target.value))}
-            className={styles.slider}
-          />
-          <span>{settings.maxTubes}</span>
-        </div>
-        <div className={styles.controlGroup}>
-          <label>Wireframe</label>
-          <input
-            type="checkbox"
-            checked={settings.wireframe}
-            onChange={e => updateSetting('wireframe', e.target.checked)}
-            className={styles.checkbox}
-          />
-        </div>
-
-        <button className={styles.clearButton} onClick={clearTubes}>
-          Clear All Tubes
+        <button className={styles.clearButton} onClick={toggleControls}>
+          Toggle Settings
         </button>
+        {controlToggle || (
+          <>
+            <div className={styles.controlGroup}>
+              <label>Movement Type</label>
+              <select
+                value={settings.movementType}
+                onChange={e => updateSetting('movementType', e.target.value as MovementType)}
+                className={styles.select}>
+                <option value="straight">Straight Lines</option>
+                <option value="turns">90° Turns</option>
+                <option value="spiral">Spiral</option>
+                <option value="random">Random</option>
+              </select>
+            </div>
+            <div className={styles.controlGroup}>
+              <label>Spawn Rate</label>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                step="1"
+                value={settings.spawnRate}
+                onChange={e => updateSetting('spawnRate', parseFloat(e.target.value))}
+                className={styles.slider}
+              />
+              <span>{settings.spawnRate.toFixed(1)} tubes/sec</span>
+            </div>
+            <div className={styles.controlGroup}>
+              <label>Movement Speed</label>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                step="1"
+                value={settings.moveSpeed}
+                onChange={e => updateSetting('moveSpeed', parseFloat(e.target.value))}
+                className={styles.slider}
+              />
+              <span>{settings.moveSpeed.toFixed(1)}</span>
+            </div>
+            <div className={styles.controlGroup}>
+              <label>Max Tubes</label>
+              <input
+                type="range"
+                min="10"
+                max="50"
+                step="1"
+                value={settings.maxTubes}
+                onChange={e => updateSetting('maxTubes', parseInt(e.target.value))}
+                className={styles.slider}
+              />
+              <span>{settings.maxTubes}</span>
+            </div>
+            <div className={styles.controlGroup}>
+              <label>Wireframe</label>
+              <input
+                type="checkbox"
+                checked={settings.wireframe}
+                onChange={e => updateSetting('wireframe', e.target.checked)}
+                className={styles.checkbox}
+              />
+            </div>
+            <button className={styles.clearButton} onClick={clearTubes}>
+              Clear All Tubes
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

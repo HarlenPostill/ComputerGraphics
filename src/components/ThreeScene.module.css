@@ -7,6 +7,8 @@
 .controls {
   position: absolute;
   top: 20px;
+  display: flex;
+  flex-direction: column;
   right: 20px;
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 8px;
@@ -93,6 +95,22 @@
 
 .clearButton:hover {
   background-color: #ff6b81;
+}
+
+.toggleButton {
+  background-color: #dddddd;
+  color: black;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  width: fill;
+}
+
+.toggleButton:hover {
+  background-color: #d8d8d8;
 }
 
 .controlGroup span {

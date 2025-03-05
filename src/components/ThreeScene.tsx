@@ -112,12 +112,13 @@ export default function ThreeScene() {
         />
       </Canvas>
       <div className={styles.controls}>
-        <button className={styles.clearButton} onClick={toggleControls}>
+        <button className={styles.toggleButton} onClick={toggleControls}>
           Toggle Settings
         </button>
         {controlToggle || (
           <>
             <div className={styles.controlGroup}>
+              <br />
               <label>Movement Type</label>
               <select
                 value={settings.movementType}

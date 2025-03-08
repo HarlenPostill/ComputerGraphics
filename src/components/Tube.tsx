@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// Define types
 export type MovementType = 'straight' | 'turns' | 'spiral' | 'random';
 
 export interface TubeProps {
@@ -12,7 +11,7 @@ export interface TubeProps {
   color: number | string;
   wireframe: boolean;
   maxLength?: number;
-  radius?: number;
+  radius: number;
 }
 
 interface SpiralConfig {
@@ -27,8 +26,8 @@ const Tube: React.FC<TubeProps> = ({
   moveSpeed,
   color,
   wireframe,
-  maxLength = 250,
-  radius = 0.1,
+  maxLength = 250, // set value for now //TODO modularise
+  radius,
 }) => {
   const [points, setPoints] = useState<THREE.Vector3[]>(() => [
     new THREE.Vector3(...startPosition),
@@ -62,14 +61,12 @@ const Tube: React.FC<TubeProps> = ({
     const lastPoint = points[points.length - 1].clone();
     let newPoint = lastPoint.clone();
 
-    // Different movement patterns
     switch (movementType) {
       case 'straight':
         newPoint.add(directionRef.current.clone().multiplyScalar(moveSpeed * delta));
         break;
 
       case 'turns':
-        // Make a turn occasionally
         turnCounter.current += delta;
         // Force a turn after a random amount of time (1-2 seconds)
         if (turnCounter.current - lastTurnTime.current > 1 + Math.random()) {
@@ -93,7 +90,6 @@ const Tube: React.FC<TubeProps> = ({
         break;
 
       case 'spiral':
-        // Create a spiral pattern
         spiral.current.angle += 0.1 * moveSpeed * delta;
 
         // Create a local coordinate system for the spiral
@@ -121,7 +117,6 @@ const Tube: React.FC<TubeProps> = ({
         break;
 
       case 'random':
-        // Completely random movement
         directionRef.current
           .set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1)
           .normalize();
@@ -133,7 +128,6 @@ const Tube: React.FC<TubeProps> = ({
     setPoints(prevPoints => {
       const newPoints = [...prevPoints, newPoint];
 
-      // Use the growTime to determine when to stop growing
       // If we need more precise control, we can calculate based on time elapsed
       const pointsBasedOnTime = Math.floor(maxLength); //TODO fix value
 
@@ -163,7 +157,7 @@ const Tube: React.FC<TubeProps> = ({
 
   return (
     <mesh>
-      <tubeGeometry args={[path, points.length, radius, 8, false]} />
+      <tubeGeometry args={[path, points.length, radius / 10, 8, false]} />
       <meshStandardMaterial
         color={color}
         wireframe={wireframe}

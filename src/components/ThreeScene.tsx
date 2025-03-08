@@ -19,6 +19,7 @@ interface Settings {
   spawnRate: number;
   moveSpeed: number;
   maxTubes: number;
+  tubeSize: number;
 }
 
 export default function ThreeScene() {
@@ -30,6 +31,7 @@ export default function ThreeScene() {
     spawnRate: 1,
     moveSpeed: 10,
     maxTubes: 15,
+    tubeSize: 1,
   });
 
   const spawnTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -98,6 +100,7 @@ export default function ThreeScene() {
             moveSpeed={settings.moveSpeed}
             color={tube.color}
             wireframe={settings.wireframe}
+            radius={settings.tubeSize}
           />
         ))}
 
@@ -168,6 +171,19 @@ export default function ThreeScene() {
                 className={styles.slider}
               />
               <span>{settings.maxTubes}</span>
+            </div>
+            <div className={styles.controlGroup}>
+              <label>Tube Size</label>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                value={settings.tubeSize}
+                onChange={e => updateSetting('tubeSize', parseInt(e.target.value))}
+                className={styles.slider}
+              />
+              <span>{settings.tubeSize}</span>
             </div>
             <div className={styles.controlGroup}>
               <label>Wireframe</label>

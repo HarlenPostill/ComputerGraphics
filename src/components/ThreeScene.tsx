@@ -4,19 +4,19 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import styles from './ThreeScene.module.css';
 import Floor from './Floor';
+import DesertSky from './DesertSky';
 
 export default function ThreeScene() {
   return (
     <div className={styles.sceneContainer}>
       <Canvas>
-        <PerspectiveCamera makeDefault position={[0, 0, 25]} fov={75} />
+        <PerspectiveCamera makeDefault position={[0, 5, 25]} fov={75} />
         <ambientLight intensity={0.8} />
         <spotLight position={[10, 10, 10]} angle={0.5} penumbra={1} intensity={1.5} />
         <pointLight position={[-10, -10, -10]} intensity={1} />
         <pointLight position={[0, 15, 0]} intensity={1} color="white" />
-
+        <DesertSky sunPosition={[1, 0.25, 0.25]} />
         <Floor size={30} divisions={30} color="0x888888" />
-
         <OrbitControls
           enableDamping
           dampingFactor={0.05}

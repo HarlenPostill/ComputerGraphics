@@ -7,7 +7,7 @@ interface CameraControlsProps {
   speed?: number;
 }
 
-export default function CameraControls({ speed = 2.0 }: CameraControlsProps) {
+export default function CameraControls({ speed = 200.0 }: CameraControlsProps) {
   const { camera } = useThree();
   const [keysPressed, setKeysPressed] = useState<{ [key: string]: boolean }>({});
   const clockRef = useRef<THREE.Clock>(new THREE.Clock());

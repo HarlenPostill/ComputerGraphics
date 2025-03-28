@@ -4,7 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, PerformanceMonitor } from '@react-three/drei';
 import styles from './ThreeScene.module.css';
 import DesertSky from './DesertSky';
-import DesertTerrain from './DesertTerrain';
+import MultiLevelDesertTerrain from './MultiLevelDesertTerrain';
 
 export default function ThreeScene() {
   const [dpr, setDpr] = useState(1.5);
@@ -19,9 +19,7 @@ export default function ThreeScene() {
           logarithmicDepthBuffer: true,
         }}>
         <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />
-
-        <PerspectiveCamera makeDefault position={[0, 10, 50]} fov={75} far={2000} />
-
+        <PerspectiveCamera makeDefault position={[0, 10, 50]} fov={75} far={10000} />
         <ambientLight intensity={0.3} />
         <directionalLight
           position={[50, 100, 50]}
@@ -36,11 +34,10 @@ export default function ThreeScene() {
           shadow-camera-far={500}
         />
 
+        {/* Scene Elements */}
         <DesertSky sunPosition={[50, 80, 50]} />
-
-        <fog attach="fog" args={['#e1c4a4', 100, 850]} />
-
-        <DesertTerrain size={1000} segments={128} />
+        <fog attach="fog" args={['#e1c4a4', 200, 2000]} />
+        <MultiLevelDesertTerrain layers={3} baseSize={1000} baseHeight={8} segments={400} />
 
         <OrbitControls
           enableDamping

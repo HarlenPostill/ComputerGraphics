@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import * as THREE from 'three';
 import { Detailed, useTexture } from '@react-three/drei';
 import { createNoise2D } from 'simplex-noise';
+import { SandParticlesEffect } from './SandParticlesEffect';
 
 interface MultiLevelDesertTerrainProps {
   layers?: number;
@@ -23,7 +24,7 @@ const createDuneNoise = () => {
       Math.abs(noise2D(x * 0.008 * scale - 50, y * 0.008 * scale - 50)) * 3;
 
     const ripples =
-      Math.abs(noise2D(x * 0.03 * scale + 200, y * 0.03 * scale + 200)) * 0.5 +
+      Math.abs(noise2D(x * 0.0003 * scale + 200, y * 0.03 * scale + 200)) * 0.5 +
       Math.abs(noise2D(x * 0.05 * scale - 200, y * 0.05 * scale - 200)) * 0.3;
 
     const windDirection =
@@ -93,7 +94,6 @@ export default function MultiLevelDesertTerrain({
   const sandTexture = useMemo(() => generateSandMaterial(), []);
   const normalMap = useTexture('/sand_normal.jpg');
   const roughnessMap = useTexture('/sand_roughness.jpg');
-
   const terrainLayers = useMemo(() => {
     const layers_data = [];
 
@@ -130,17 +130,6 @@ export default function MultiLevelDesertTerrain({
     return layers_data;
   }, [layers, baseSize, segments, baseHeight, duneNoise]);
 
-  const sandMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      map: sandTexture,
-      normalMap,
-      roughnessMap,
-      roughness: 0.8,
-      metalness: 0.1,
-      envMapIntensity: 0.5,
-    });
-  }, [sandTexture, normalMap, roughnessMap]);
-
   return (
     <group>
       {terrainLayers.map((layer, index) => (
@@ -150,11 +139,17 @@ export default function MultiLevelDesertTerrain({
           position={layer.position as [number, number, number]}
           rotation={[-Math.PI / 2, 0, 0]}>
           {layer.geometries.map((geo, lodIndex) => (
-            <mesh
-              key={`lod-${lodIndex}`}
-              geometry={geo}
-              material={sandMaterial}
-              receiveShadow></mesh>
+            <mesh key={`lod-${lodIndex}`} geometry={geo} receiveShadow>
+              <SandParticlesEffect
+                baseTexture={sandTexture}
+                normalMap={normalMap}
+                roughnessMap={roughnessMap}
+                windDirection={[1, 0.5]}
+                particleScale={100.0}
+                particleSpeed={1.5}
+                particleIntensity={1}
+              />
+            </mesh>
           ))}
         </Detailed>
       ))}

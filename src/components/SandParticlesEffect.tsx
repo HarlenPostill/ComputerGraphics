@@ -1,8 +1,8 @@
-'use client';
-import React, { forwardRef, useRef, useEffect } from 'react';
-import * as THREE from 'three';
-import { extend, useFrame } from '@react-three/fiber';
-import { shaderMaterial } from '@react-three/drei';
+"use client";
+import React, { forwardRef, useRef, useEffect } from "react";
+import * as THREE from "three";
+import { extend, useFrame } from "@react-three/fiber";
+import { shaderMaterial } from "@react-three/drei";
 
 const sandParticlesMaterial = shaderMaterial(
   {
@@ -11,9 +11,14 @@ const sandParticlesMaterial = shaderMaterial(
     normalMap: new THREE.Texture(),
     roughnessMap: new THREE.Texture(),
     windDirection: new THREE.Vector2(1, 1),
+    cloudDirection: new THREE.Vector2(0.5, 0.8),
     particleScale: 30.0,
     particleSpeed: 0.2,
     particleIntensity: 0.3,
+    cloudScale: 20.0,
+    cloudSpeed: 0.05,
+    cloudDarkness: 0.3,
+    cloudCoverage: 0.6,
   },
   `
     varying vec2 vUv;
@@ -33,9 +38,14 @@ const sandParticlesMaterial = shaderMaterial(
     uniform sampler2D normalMap;
     uniform sampler2D roughnessMap;
     uniform vec2 windDirection;
+    uniform vec2 cloudDirection;
     uniform float particleScale;
     uniform float particleSpeed;
     uniform float particleIntensity;
+    uniform float cloudScale;
+    uniform float cloudSpeed;
+    uniform float cloudDarkness;
+    uniform float cloudCoverage;
 
     varying vec2 vUv;
     varying vec3 vNormal;
@@ -77,6 +87,23 @@ const sandParticlesMaterial = shaderMaterial(
       return value;
     }
 
+    // Function specifically for cloud patterns
+    float cloudNoise(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float frequency = 1.0;
+      
+      // Use fewer octaves for smoother clouds
+      for (int i = 0; i < 4; i++) {
+        value += amplitude * noise(p * frequency);
+        frequency *= 2.0;
+        amplitude *= 0.6;
+      }
+      
+      // Adjust to get more defined cloud shapes
+      return smoothstep(0.3, 0.7, value);
+    }
+
     void main() {
       vec4 baseColor = texture2D(baseTexture, vUv);
       vec3 normal = texture2D(normalMap, vUv).rgb * 2.0 - 1.0;
@@ -101,12 +128,27 @@ const sandParticlesMaterial = shaderMaterial(
       float normalFactor = dot(normalize(normal), vec3(0.0, 1.0, 0.0));
       particles *= mix(0.7, 1.0, normalFactor);
 
+      vec2 cloudMovement = cloudDirection * time * cloudSpeed;
+      
+      float clouds = 0.0;
+      vec2 cloudSt1 = vUv * cloudScale + cloudMovement;
+      clouds += cloudNoise(cloudSt1) * 0.6;
+      
+      vec2 cloudSt2 = vUv * (cloudScale * 0.5) + cloudMovement * 0.7;
+      clouds += cloudNoise(cloudSt2) * 0.4;
+      
+      clouds = smoothstep(1.0 - cloudCoverage, 1.0, clouds);
+      
+      float shadowIntensity = clouds * cloudDarkness;
+      
       vec3 particleColor = mix(baseColor.rgb, baseColor.rgb * 1.2, particles * particleIntensity);
       
       float sparkle = pow(particles, 4.0) * 0.3;
       particleColor += vec3(sparkle);
+      
+      vec3 finalColor = mix(particleColor, particleColor * (1.0 - shadowIntensity), shadowIntensity);
 
-      gl_FragColor = vec4(particleColor, baseColor.a);
+      gl_FragColor = vec4(finalColor, baseColor.a);
     }
   `
 );
@@ -118,12 +160,17 @@ interface SandParticlesProps {
   normalMap: THREE.Texture;
   roughnessMap: THREE.Texture;
   windDirection?: [number, number];
+  cloudDirection?: [number, number];
   particleScale?: number;
   particleSpeed?: number;
   particleIntensity?: number;
+  cloudScale?: number;
+  cloudSpeed?: number;
+  cloudDarkness?: number;
+  cloudCoverage?: number;
 }
 
-declare module '@react-three/fiber' {
+declare module "@react-three/fiber" {
   interface ThreeElements {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sandParticlesMaterial: any;
@@ -131,16 +178,24 @@ declare module '@react-three/fiber' {
 }
 
 // eslint-disable-next-line react/display-name
-export const SandParticlesEffect = forwardRef<THREE.ShaderMaterial, SandParticlesProps>(
+export const SandParticlesEffect = forwardRef<
+  THREE.ShaderMaterial,
+  SandParticlesProps
+>(
   (
     {
       baseTexture,
       normalMap,
       roughnessMap,
       windDirection = [1, 1],
+      cloudDirection = [0.5, 0.8],
       particleScale = 30.0,
       particleSpeed = 0.2,
       particleIntensity = 0.3,
+      cloudScale = 10.0,
+      cloudSpeed = -0.25,
+      cloudDarkness = 0.35,
+      cloudCoverage = 0.3,
     },
     ref
   ) => {
@@ -148,7 +203,7 @@ export const SandParticlesEffect = forwardRef<THREE.ShaderMaterial, SandParticle
 
     useEffect(() => {
       if (ref) {
-        if (typeof ref === 'function') {
+        if (typeof ref === "function") {
           ref(localRef.current);
         } else {
           ref.current = localRef.current;
@@ -156,7 +211,7 @@ export const SandParticlesEffect = forwardRef<THREE.ShaderMaterial, SandParticle
       }
     }, [ref]);
 
-    useFrame(state => {
+    useFrame((state) => {
       if (localRef.current) {
         localRef.current.uniforms.time.value = state.clock.getElapsedTime();
       }
@@ -169,9 +224,14 @@ export const SandParticlesEffect = forwardRef<THREE.ShaderMaterial, SandParticle
         normalMap={normalMap}
         roughnessMap={roughnessMap}
         windDirection={new THREE.Vector2(...windDirection)}
+        cloudDirection={new THREE.Vector2(...cloudDirection)}
         particleScale={particleScale}
         particleSpeed={particleSpeed}
         particleIntensity={particleIntensity}
+        cloudScale={cloudScale}
+        cloudSpeed={cloudSpeed}
+        cloudDarkness={cloudDarkness}
+        cloudCoverage={cloudCoverage}
         transparent
       />
     );

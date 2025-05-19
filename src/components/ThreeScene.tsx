@@ -1,20 +1,24 @@
-'use client';
-import React, { useState, useRef, useEffect } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, PerformanceMonitor } from '@react-three/drei';
-import * as THREE from 'three';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
-import styles from './ThreeScene.module.css';
-import MultiLevelDesertTerrain from './MultiLevelDesertTerrain';
-import DesertSky from './DesertSky';
+"use client";
+import React, { useState, useRef, useEffect } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import {
+  OrbitControls,
+  PerspectiveCamera,
+  PerformanceMonitor,
+} from "@react-three/drei";
+import * as THREE from "three";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import styles from "./ThreeScene.module.css";
+import MultiLevelDesertTerrain from "./MultiLevelDesertTerrain";
+import DesertSky from "./DesertSky";
 
 function Scene() {
   const { scene } = useThree();
   const sunPosition = useRef<[number, number, number]>([50, 80, 50]);
 
   useEffect(() => {
-    scene.background = new THREE.Color('#87CEEB');
-    scene.fog = new THREE.FogExp2('#e1c4a4', 0.0008);
+    scene.background = new THREE.Color("#87CEEB");
+    scene.fog = new THREE.FogExp2("#e1c4a4", 0.0008);
   }, [scene]);
 
   return (
@@ -22,7 +26,11 @@ function Scene() {
       <DesertSky />
 
       <EffectComposer>
-        <Bloom intensity={0.5} luminanceThreshold={0.85} luminanceSmoothing={0.4} />
+        <Bloom
+          intensity={0.5}
+          luminanceThreshold={0.85}
+          luminanceSmoothing={0.4}
+        />
       </EffectComposer>
 
       <ambientLight intensity={0.3} />
@@ -43,7 +51,12 @@ function Scene() {
       <pointLight position={[-50, 30, -50]} intensity={0.2} color="#FFB74D" />
       <pointLight position={[50, 30, 50]} intensity={0.2} color="#FFE0B2" />
 
-      <MultiLevelDesertTerrain layers={1} baseSize={500} baseHeight={3} segments={200} />
+      <MultiLevelDesertTerrain
+        layers={1}
+        baseSize={500}
+        baseHeight={3}
+        segments={200}
+      />
 
       <OrbitControls
         enableDamping
@@ -72,9 +85,18 @@ export default function ThreeScene() {
           outputColorSpace: THREE.SRGBColorSpace,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
-        }}>
-        <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />
-        <PerspectiveCamera makeDefault position={[0, 10, 50]} fov={75} far={10000} />
+        }}
+      >
+        <PerformanceMonitor
+          onDecline={() => setDpr(1)}
+          onIncline={() => setDpr(1.5)}
+        />
+        <PerspectiveCamera
+          makeDefault
+          position={[0, 10, 50]}
+          fov={75}
+          far={10000}
+        />
         <Scene />
       </Canvas>
     </div>

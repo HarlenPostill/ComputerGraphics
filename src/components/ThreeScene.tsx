@@ -15,6 +15,7 @@ import DesertSky from "./DesertSky";
 function Scene() {
   const { scene } = useThree();
   const sunPosition = useRef<[number, number, number]>([50, 80, 50]);
+  // const windDirection = useRef<[number, number]>([0.5, -0.8]);
 
   useEffect(() => {
     scene.background = new THREE.Color("#87CEEB");
@@ -24,7 +25,6 @@ function Scene() {
   return (
     <>
       <DesertSky />
-
       <EffectComposer>
         <Bloom
           intensity={0.5}
@@ -32,7 +32,6 @@ function Scene() {
           luminanceSmoothing={0.4}
         />
       </EffectComposer>
-
       <ambientLight intensity={0.3} />
       <directionalLight
         position={sunPosition.current}
@@ -46,15 +45,22 @@ function Scene() {
         shadow-camera-bottom={-100}
         shadow-camera-far={500}
       />
-
       {/* will adjust lighting to match later */}
       <pointLight position={[-50, 30, -50]} intensity={0.2} color="#FFB74D" />
       <pointLight position={[50, 30, 50]} intensity={0.2} color="#FFE0B2" />
 
+      {/* <SandSheets
+        count={40}
+        speed={0.8}
+        intensity={1}
+        direction={windDirection.current}
+        terrainSize={500}
+        sandColor={"#F9E9D0"}
+      /> */}
       <MultiLevelDesertTerrain
         layers={1}
         baseSize={500}
-        baseHeight={3}
+        baseHeight={4}
         segments={200}
       />
 

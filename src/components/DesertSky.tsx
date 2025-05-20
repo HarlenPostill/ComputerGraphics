@@ -142,37 +142,37 @@ function LinearClouds({ count, coverage, speed, direction }: LinearCloudProps) {
 
       // TODO fix the random entry point interation....
 
-      // const distanceFromCenter = new THREE.Vector2(
-      //   mesh.position.x - cloudAreaSize.center.x,
-      //   mesh.position.z - cloudAreaSize.center.z
-      // ).length();
+      const distanceFromCenter = new THREE.Vector2(
+        mesh.position.x - cloudAreaSize.center.x,
+        mesh.position.z - cloudAreaSize.center.z
+      ).length();
 
-      // if (distanceFromCenter > viewDistance * 0.5) {
-      //   const angle = Math.atan2(
-      //     mesh.position.z - cloudAreaSize.center.z,
-      //     mesh.position.x - cloudAreaSize.center.x
-      //   );
+      if (distanceFromCenter > viewDistance * 0.5) {
+        const angle = Math.atan2(
+          mesh.position.z - cloudAreaSize.center.z,
+          mesh.position.x - cloudAreaSize.center.x
+        );
 
-      //   // const oppositeAngle = angle + Math.PI;
+        const oppositeAngle = angle + Math.PI;
 
-      //   // rando entry point on path
-      //   const entryDistance = viewDistance * 0.5 * (0.8 + Math.random() * 0.3);
-      //   const newX =
-      //     cloudAreaSize.center.x + Math.cos(oppositeAngle) * entryDistance;
-      //   const newZ =
-      //     cloudAreaSize.center.z + Math.sin(oppositeAngle) * entryDistance;
+        // rando entry point on path
+        const entryDistance = viewDistance * 0.5 * (0.8 + Math.random() * 0.3);
+        const newX =
+          cloudAreaSize.center.x + Math.cos(oppositeAngle) * entryDistance;
+        const newZ =
+          cloudAreaSize.center.z + Math.sin(oppositeAngle) * entryDistance;
 
-      //   // rando y height
-      //   const newY =
-      //     cloudAreaSize.center.y + (Math.random() - 0.5) * cloudAreaSize.height;
+        // rando y height
+        const newY =
+          cloudAreaSize.center.y + (Math.random() - 0.5) * cloudAreaSize.height;
 
-      //   mesh.position.set(newX, newY, newZ);
+        mesh.position.set(newX, newY, newZ);
 
-      //   // fade in
-      //   if (mesh.material instanceof THREE.MeshLambertMaterial) {
-      //     mesh.material.opacity = 0;
-      //   }
-      // }
+        // fade in
+        if (mesh.material instanceof THREE.MeshLambertMaterial) {
+          mesh.material.opacity = 0;
+        }
+      }
     });
   });
 

@@ -7,11 +7,12 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import styles from './ThreeScene.module.css';
 import MultiLevelDesertTerrain from './MultiLevelDesertTerrain';
 import DesertSky from './DesertSky';
+import { GUI } from 'dat.gui';
 
 function Scene() {
   const { scene } = useThree();
   const sunPosition = useRef<[number, number, number]>([50, 80, 50]);
-  // const windDirection = useRef<[number, number]>([0.5, -0.8]);
+  const gui = new GUI();
 
   useEffect(() => {
     scene.background = new THREE.Color('#87CEEB');

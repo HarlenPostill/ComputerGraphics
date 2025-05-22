@@ -1,12 +1,14 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, PerformanceMonitor } from '@react-three/drei';
-import styles from './ThreeScene.module.css';
-import DesertSky from './DesertSky';
 import MultiLevelDesertTerrain from './MultiLevelDesertTerrain';
+import Sandworm from './Sandworm';
+import { Mesh } from 'three';
+import styles from './ThreeScene.module.css';
 
 export default function ThreeScene() {
+  const terrainRef = useRef<Mesh>(null);
   const [dpr, setDpr] = useState(1.5);
 
   return (
@@ -14,10 +16,7 @@ export default function ThreeScene() {
       <Canvas
         shadows
         dpr={dpr}
-        gl={{
-          antialias: true,
-          logarithmicDepthBuffer: true,
-        }}>
+        gl={{ antialias: true, logarithmicDepthBuffer: true }}>
         <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />
         <PerspectiveCamera makeDefault position={[0, 10, 50]} fov={75} far={10000} />
         <ambientLight intensity={0.3} />
@@ -34,10 +33,8 @@ export default function ThreeScene() {
           shadow-camera-far={500}
         />
 
-        {/* Scene Elements */}
-        <DesertSky sunPosition={[50, 80, 50]} />
-        <fog attach="fog" args={['#e1c4a4', 200, 2000]} />
-        <MultiLevelDesertTerrain layers={3} baseSize={1000} baseHeight={8} segments={400} />
+        <MultiLevelDesertTerrain ref={terrainRef} />
+        <Sandworm terrainRef={terrainRef} scale={2} />
 
         <OrbitControls
           enableDamping

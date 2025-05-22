@@ -1,9 +1,9 @@
-"use client";
-import React, { useRef, useMemo, useEffect } from "react";
-import { Sky } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
-import cloudTextureImg from "/public/cloud.png";
+'use client';
+import React, { useRef, useMemo, useEffect } from 'react';
+import { Sky } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import cloudTextureImg from '/public/cloud.png';
 
 interface DesertSkyProps {
   sunPosition?: [number, number, number];
@@ -59,8 +59,8 @@ function LinearClouds({ count, coverage, speed, direction }: LinearCloudProps) {
   const cloudAreaSize = useMemo(() => {
     return {
       width: 600,
-      height: 60,
-      center: new THREE.Vector3(0, 80, 0),
+      height: 70,
+      center: new THREE.Vector3(0, 100, 0),
     };
   }, []);
 
@@ -77,8 +77,7 @@ function LinearClouds({ count, coverage, speed, direction }: LinearCloudProps) {
     for (let i = 0; i < count; i++) {
       const x = (Math.random() - 0.5) * cloudAreaSize.width;
       const z = (Math.random() - 0.5) * cloudAreaSize.width;
-      const y =
-        cloudAreaSize.center.y + (Math.random() - 0.5) * cloudAreaSize.height;
+      const y = cloudAreaSize.center.y + (Math.random() - 0.5) * cloudAreaSize.height;
 
       const size = baseSize * (0.7 + Math.random() * 0.6);
 
@@ -118,8 +117,7 @@ function LinearClouds({ count, coverage, speed, direction }: LinearCloudProps) {
       mesh.position.z += normalizedDirection[1] * speed * 15 * delta;
 
       // slight height y variation
-      mesh.position.y +=
-        Math.sin(state.clock.elapsedTime * 0.05 + index * 0.1) * 0.05 * delta;
+      mesh.position.y += Math.sin(state.clock.elapsedTime * 0.05 + index * 0.1) * 0.05 * delta;
 
       if (index % 5 === 0) {
         mesh.rotation.z += 0.008 * delta;
@@ -130,49 +128,44 @@ function LinearClouds({ count, coverage, speed, direction }: LinearCloudProps) {
       let targetOpacity = 0.8;
 
       if (distanceToCamera > fadeDistance) {
-        const fadeRatio =
-          1 - (distanceToCamera - fadeDistance) / (viewDistance - fadeDistance);
+        const fadeRatio = 1 - (distanceToCamera - fadeDistance) / (viewDistance - fadeDistance);
         targetOpacity *= Math.max(0, Math.min(1, fadeRatio));
       }
 
       if (mesh.material instanceof THREE.MeshLambertMaterial) {
-        mesh.material.opacity +=
-          (targetOpacity - mesh.material.opacity) * Math.min(1, delta * 2);
+        mesh.material.opacity += (targetOpacity - mesh.material.opacity) * Math.min(1, delta * 2);
       }
 
       // TODO fix the random entry point interation....
 
-      // const distanceFromCenter = new THREE.Vector2(
-      //   mesh.position.x - cloudAreaSize.center.x,
-      //   mesh.position.z - cloudAreaSize.center.z
-      // ).length();
+      const distanceFromCenter = new THREE.Vector2(
+        mesh.position.x - cloudAreaSize.center.x,
+        mesh.position.z - cloudAreaSize.center.z
+      ).length();
 
-      // if (distanceFromCenter > viewDistance * 0.5) {
-      //   const angle = Math.atan2(
-      //     mesh.position.z - cloudAreaSize.center.z,
-      //     mesh.position.x - cloudAreaSize.center.x
-      //   );
+      if (distanceFromCenter > viewDistance * 0.5) {
+        const angle = Math.atan2(
+          mesh.position.z - cloudAreaSize.center.z,
+          mesh.position.x - cloudAreaSize.center.x
+        );
 
-      //   // const oppositeAngle = angle + Math.PI;
+        const oppositeAngle = angle + Math.PI;
 
-      //   // rando entry point on path
-      //   const entryDistance = viewDistance * 0.5 * (0.8 + Math.random() * 0.3);
-      //   const newX =
-      //     cloudAreaSize.center.x + Math.cos(oppositeAngle) * entryDistance;
-      //   const newZ =
-      //     cloudAreaSize.center.z + Math.sin(oppositeAngle) * entryDistance;
+        // rando entry point on path
+        const entryDistance = viewDistance * 0.5 * (0.8 + Math.random() * 0.3);
+        const newX = cloudAreaSize.center.x + Math.cos(oppositeAngle) * entryDistance;
+        const newZ = cloudAreaSize.center.z + Math.sin(oppositeAngle) * entryDistance;
 
-      //   // rando y height
-      //   const newY =
-      //     cloudAreaSize.center.y + (Math.random() - 0.5) * cloudAreaSize.height;
+        // rando y height
+        const newY = cloudAreaSize.center.y + (Math.random() - 0.5) * cloudAreaSize.height;
 
-      //   mesh.position.set(newX, newY, newZ);
+        mesh.position.set(newX, newY, newZ);
 
-      //   // fade in
-      //   if (mesh.material instanceof THREE.MeshLambertMaterial) {
-      //     mesh.material.opacity = 0;
-      //   }
-      // }
+        // fade in
+        if (mesh.material instanceof THREE.MeshLambertMaterial) {
+          mesh.material.opacity = 0;
+        }
+      }
     });
   });
 
@@ -185,12 +178,11 @@ function LinearClouds({ count, coverage, speed, direction }: LinearCloudProps) {
       {clouds.map((cloud, i) => (
         <mesh
           key={i}
-          ref={(el) => {
+          ref={el => {
             if (el) cloudMeshesRef.current[i] = el;
           }}
           position={new THREE.Vector3(...cloud.position)}
-          rotation={new THREE.Euler(...cloud.rotation)}
-        >
+          rotation={new THREE.Euler(...cloud.rotation)}>
           <planeGeometry args={[cloud.size, cloud.size]} />
           <meshLambertMaterial
             map={cloudTexture}

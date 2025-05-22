@@ -12,6 +12,7 @@
     "@react-three/drei": "^10.0.3",
     "@react-three/fiber": "^9.0.4",
     "@react-three/postprocessing": "^3.0.4",
+    "dat.gui": "^0.7.9",
     "next": "15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/dat.gui": "^0.7.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

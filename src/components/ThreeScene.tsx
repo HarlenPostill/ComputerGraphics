@@ -8,6 +8,8 @@ import styles from './ThreeScene.module.css';
 import MultiLevelDesertTerrain from './MultiLevelDesertTerrain';
 import DesertSky from './DesertSky';
 import { GUI } from 'dat.gui';
+import SandDisplacer from './SandDisplacer';
+
 
 interface SceneParams {
   sunPositionX: number;
@@ -44,11 +46,15 @@ interface SceneParams {
   fogColor: string;
 
   backgroundColor: string;
+
+  sandDisplacerSize: number;
 }
 
 function Scene() {
   const { scene } = useThree();
   const guiRef = useRef<GUI | null>(null);
+  const terrainRef = useRef<THREE.Mesh>(null);
+
 
   const params = useRef<SceneParams>({
     sunPositionX: 1,
@@ -85,6 +91,8 @@ function Scene() {
     fogColor: '#e1c4a4',
 
     backgroundColor: '#87CEEB',
+
+    sandDisplacerSize: 5,
   });
 
   const [sceneParams, setSceneParams] = useState(params.current);
@@ -262,6 +270,14 @@ function Scene() {
         scene.background = new THREE.Color(params.current.backgroundColor);
       });
 
+    //Sand Displacer Controls
+    const sandFolder = gui.addFolder('Sand Displacer');
+    sandFolder
+      .add(params.current, 'sandDisplacerSize', 0.5, 20, 0.5)
+      .name('Displacer Size')
+      .onChange(() => setSceneParams({ ...params.current }));
+    sandFolder.open();
+
     // Cleanup function
     return () => {
       if (guiRef.current) {
@@ -339,6 +355,12 @@ function Scene() {
         }}
       />
 
+<SandDisplacer
+   scale={sceneParams.sandDisplacerSize}
+  terrainRef={terrainRef}
+/>
+
+
       <OrbitControls
         enableDamping
         dampingFactor={0.05}
@@ -354,7 +376,7 @@ function Scene() {
 
 export default function ThreeScene() {
   const [dpr, setDpr] = useState(1.5);
-
+  
   return (
     <div className={styles.sceneContainer}>
       <Canvas

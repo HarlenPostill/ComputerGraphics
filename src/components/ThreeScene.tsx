@@ -1,5 +1,13 @@
 'use client';
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import { Canvas, useThree, useFrame, extend } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, useTexture, shaderMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -200,6 +208,11 @@ interface ThreeSceneProps {
   brushStrength?: number;
 }
 
+// Add export interface
+export interface ThreeSceneRef {
+  exportHeightmap: () => void;
+}
+
 declare module '@react-three/fiber' {
   interface ThreeElements {
     sandParticlesMaterial: unknown;
@@ -257,12 +270,14 @@ function TerrainMesh({
   sandSettings,
   isPainting,
   mousePosition,
+  onHeightDataChange,
 }: {
   settings: TerrainSettings;
   brushSettings: BrushSettings;
   sandSettings: SandShaderSettings;
   isPainting: boolean;
   mousePosition: THREE.Vector3 | null;
+  onHeightDataChange: (heightData: Float32Array, resolution: number) => void;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const geometryRef = useRef<THREE.PlaneGeometry>(null);
@@ -287,7 +302,10 @@ function TerrainMesh({
       heightData.current[i] = 0;
       originalHeights.current[i] = 0;
     }
-  }, [settings.resolution]);
+
+    // Pass initial height data to parent
+    onHeightDataChange(heightData.current, settings.resolution);
+  }, [settings.resolution, onHeightDataChange]);
 
   useFrame(state => {
     if (materialRef.current) {
@@ -412,8 +430,11 @@ function TerrainMesh({
 
       geometry.attributes.position.needsUpdate = true;
       geometry.computeVertexNormals();
+
+      // Notify parent of height data changes
+      onHeightDataChange(heightData.current, settings.resolution);
     },
-    [brushSettings, settings.maxHeight, smoothTerrain]
+    [brushSettings, settings.maxHeight, smoothTerrain, onHeightDataChange, settings.resolution]
   );
 
   // Handle painting
@@ -477,7 +498,14 @@ function BrushCursor({
 }
 
 // ============= MAIN SCENE COMPONENT =============
-function Scene({ brushMode, brushSize, brushStrength }: ThreeSceneProps) {
+function Scene({
+  brushMode,
+  brushSize,
+  brushStrength,
+  onHeightDataChange,
+}: ThreeSceneProps & {
+  onHeightDataChange: (heightData: Float32Array, resolution: number) => void;
+}) {
   const { camera, scene, gl } = useThree();
   const raycaster = useRef(new THREE.Raycaster());
   const [mousePosition, setMousePosition] = useState<THREE.Vector3 | null>(null);
@@ -592,6 +620,7 @@ function Scene({ brushMode, brushSize, brushStrength }: ThreeSceneProps) {
         sandSettings={sandSettings}
         isPainting={isPainting}
         mousePosition={mousePosition}
+        onHeightDataChange={onHeightDataChange}
       />
 
       <BrushCursor brushSettings={brushSettings} mousePosition={mousePosition} />
@@ -614,8 +643,80 @@ function Scene({ brushMode, brushSize, brushStrength }: ThreeSceneProps) {
   );
 }
 
-export default function ThreeScene({ brushMode, brushSize, brushStrength }: ThreeSceneProps) {
+const ThreeScene = forwardRef<ThreeSceneRef, ThreeSceneProps>(function ThreeScene(
+  { brushMode, brushSize, brushStrength },
+  ref
+) {
   const [dpr] = useState(1.5);
+  const heightDataRef = useRef<Float32Array | null>(null);
+  const resolutionRef = useRef<number>(128);
+
+  const handleHeightDataChange = useCallback((heightData: Float32Array, resolution: number) => {
+    heightDataRef.current = heightData;
+    resolutionRef.current = resolution;
+  }, []);
+
+  const exportHeightmap = useCallback(() => {
+    if (!heightDataRef.current) {
+      console.warn('No height data available for export');
+      return;
+    }
+
+    const resolution = resolutionRef.current + 1; // +1 because PlaneGeometry creates resolution+1 vertices per side
+    const heightData = heightDataRef.current;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = resolution;
+    canvas.height = resolution;
+    const ctx = canvas.getContext('2d')!;
+
+    // Create image data
+    const imageData = ctx.createImageData(resolution, resolution);
+    const data = imageData.data;
+
+    const minHeight = Math.min(...heightData);
+    let maxHeight = Math.max(...heightData);
+
+    if (maxHeight === minHeight) {
+      maxHeight = minHeight + 1;
+    }
+
+    // Convert height data to grayscale image
+    for (let i = 0; i < heightData.length; i++) {
+      const normalizedHeight = (heightData[i] - minHeight) / (maxHeight - minHeight);
+      const grayscaleValue = Math.floor(normalizedHeight * 255);
+
+      const pixelIndex = i * 4;
+      data[pixelIndex] = grayscaleValue; // Red
+      data[pixelIndex + 1] = grayscaleValue; // Green
+      data[pixelIndex + 2] = grayscaleValue; // Blue
+      data[pixelIndex + 3] = 255; // Alpha
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    // Convert to blob and download
+    canvas.toBlob(blob => {
+      if (!blob) return;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `desert-heightmap-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      exportHeightmap,
+    }),
+    [exportHeightmap]
+  );
 
   return (
     <div style={{ width: '100%', height: '100%', borderRadius: 60, overflow: 'hidden' }}>
@@ -630,8 +731,15 @@ export default function ThreeScene({ brushMode, brushSize, brushStrength }: Thre
           toneMappingExposure: 1.0,
         }}>
         <PerspectiveCamera makeDefault position={[50, 50, 50]} fov={60} />
-        <Scene brushMode={brushMode} brushSize={brushSize} brushStrength={brushStrength} />
+        <Scene
+          brushMode={brushMode}
+          brushSize={brushSize}
+          brushStrength={brushStrength}
+          onHeightDataChange={handleHeightDataChange}
+        />
       </Canvas>
     </div>
   );
-}
+});
+
+export default ThreeScene;

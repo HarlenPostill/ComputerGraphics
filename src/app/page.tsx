@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import ControlPanel from '@/components/ControlPanel';
-import ThreeScene from '@/components/ThreeScene';
+import ThreeScene, { ThreeSceneRef } from '@/components/ThreeScene';
 import TitleScene from '@/components/TitleScreen';
 
 export default function Home() {
@@ -9,6 +9,8 @@ export default function Home() {
   const [brushSize, setBrushSize] = useState(10);
   const [brushStrength, setBrushStrength] = useState(50);
   const [showTerrain, setShowTerrain] = useState(false);
+
+  const threeSceneRef = useRef<ThreeSceneRef>(null);
 
   const handleBrushModeChange = (mode: 'raise' | 'lower' | 'flatten' | 'smooth') => {
     setBrushMode(mode);
@@ -24,6 +26,12 @@ export default function Home() {
 
   const handleCreateTerrainClick = () => {
     setShowTerrain(true);
+  };
+
+  const handleExportHeightmap = () => {
+    if (threeSceneRef.current) {
+      threeSceneRef.current.exportHeightmap();
+    }
   };
 
   return (
@@ -44,20 +52,31 @@ export default function Home() {
           justifyContent: 'space-between',
           display: 'flex',
         }}>
-        <h1>Desert Painter</h1>
+        <h1>SandScaper</h1>
         {showTerrain ? (
           <button
+            onClick={handleExportHeightmap}
             style={{
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = '#f0f0f0';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}>
             <span
               className="material-symbols-outlined"
               style={{
                 fontSize: 30,
+                marginRight: '8px',
               }}>
               file_download
             </span>
@@ -108,7 +127,12 @@ export default function Home() {
             flexDirection: 'row',
             gap: 30,
           }}>
-          <ThreeScene brushMode={brushMode} brushSize={brushSize} brushStrength={brushStrength} />
+          <ThreeScene
+            ref={threeSceneRef}
+            brushMode={brushMode}
+            brushSize={brushSize}
+            brushStrength={brushStrength}
+          />
           <ControlPanel
             onBrushModeChange={handleBrushModeChange}
             onBrushSizeChange={handleBrushSizeChange}

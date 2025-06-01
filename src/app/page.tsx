@@ -8,7 +8,7 @@ export default function Home() {
   const [brushMode, setBrushMode] = useState<'raise' | 'lower' | 'flatten' | 'smooth'>('raise');
   const [brushSize, setBrushSize] = useState(10);
   const [brushStrength, setBrushStrength] = useState(50);
-  const [showTerrain, setShowTerrain] = useState(false); // New state variable
+  const [showTerrain, setShowTerrain] = useState(false);
 
   const handleBrushModeChange = (mode: 'raise' | 'lower' | 'flatten' | 'smooth') => {
     setBrushMode(mode);
@@ -37,6 +37,36 @@ export default function Home() {
         alignItems: 'center',
         justifyContent: 'center',
       }}>
+      <div
+        style={{
+          width: '100%',
+          textAlign: 'center',
+          justifyContent: 'space-between',
+          display: 'flex',
+        }}>
+        <h1>Desert Painter</h1>
+        {showTerrain ? (
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+            }}>
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 30,
+              }}>
+              file_download
+            </span>
+            <h3>Export Terrain Map</h3>
+          </button>
+        ) : (
+          <></>
+        )}
+      </div>
       {!showTerrain ? (
         <>
           <TitleScene />

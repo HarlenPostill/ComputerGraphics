@@ -1,8 +1,8 @@
-"use client";
-import React, { forwardRef, useRef, useEffect } from "react";
-import * as THREE from "three";
-import { extend, useFrame } from "@react-three/fiber";
-import { shaderMaterial } from "@react-three/drei";
+'use client';
+import React, { forwardRef, useRef, useEffect } from 'react';
+import * as THREE from 'three';
+import { extend, useFrame } from '@react-three/fiber';
+import { shaderMaterial } from '@react-three/drei';
 
 const sandParticlesMaterial = shaderMaterial(
   {
@@ -170,18 +170,14 @@ interface SandParticlesProps {
   cloudCoverage?: number;
 }
 
-declare module "@react-three/fiber" {
+declare module '@react-three/fiber' {
   interface ThreeElements {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sandParticlesMaterial: any;
+    sandParticlesMaterial: unknown;
   }
 }
 
 // eslint-disable-next-line react/display-name
-export const SandParticlesEffect = forwardRef<
-  THREE.ShaderMaterial,
-  SandParticlesProps
->(
+export const SandParticlesEffect = forwardRef<THREE.ShaderMaterial, SandParticlesProps>(
   (
     {
       baseTexture,
@@ -203,7 +199,7 @@ export const SandParticlesEffect = forwardRef<
 
     useEffect(() => {
       if (ref) {
-        if (typeof ref === "function") {
+        if (typeof ref === 'function') {
           ref(localRef.current);
         } else {
           ref.current = localRef.current;
@@ -211,7 +207,7 @@ export const SandParticlesEffect = forwardRef<
       }
     }, [ref]);
 
-    useFrame((state) => {
+    useFrame(state => {
       if (localRef.current) {
         localRef.current.uniforms.time.value = state.clock.getElapsedTime();
       }

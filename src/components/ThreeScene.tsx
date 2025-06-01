@@ -4,8 +4,11 @@ import { Canvas, useThree, useFrame, extend } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, useTexture, shaderMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import DesertSky from './DesertSky';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 
-// ============= SAND SHADER MATERIAL =============
+// ============= SAND SHADER MATERIAL 2  =============
+
+//TODO refactor to use original shader from demo
 const sandParticlesMaterial = shaderMaterial(
   {
     time: 0,
@@ -266,15 +269,12 @@ function TerrainMesh({
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   useThree();
 
-  // Height data storage
   const heightData = useRef<Float32Array>(null);
   const originalHeights = useRef<Float32Array>(null);
 
-  // Textures
   const sandTexture = useMemo(() => generateSandTexture(), []);
   const [normalMap, roughnessMap] = useTexture(['/sand_normal.jpg', '/sand_roughness2.jpg']);
 
-  // Initialize terrain
   useEffect(() => {
     if (!geometryRef.current) return;
 
@@ -283,21 +283,18 @@ function TerrainMesh({
     heightData.current = new Float32Array(positions.count);
     originalHeights.current = new Float32Array(positions.count);
 
-    // Initialize with flat terrain
     for (let i = 0; i < positions.count; i++) {
       heightData.current[i] = 0;
       originalHeights.current[i] = 0;
     }
   }, [settings.resolution]);
 
-  // Update shader uniforms
   useFrame(state => {
     if (materialRef.current) {
       materialRef.current.uniforms.time.value = state.clock.getElapsedTime();
     }
   });
 
-  // Smooth function for terrain
   const smoothTerrain = useCallback(
     (centerIndex: number, radius: number, strength: number) => {
       if (!geometryRef.current || !heightData.current) return;
@@ -308,7 +305,6 @@ function TerrainMesh({
       let totalHeight = 0;
       let count = 0;
 
-      // Calculate average height in radius
       for (let i = 0; i < positions.count; i++) {
         const x = positions.getX(i);
         const y = positions.getY(i);
@@ -325,7 +321,7 @@ function TerrainMesh({
 
       const averageHeight = count > 0 ? totalHeight / count : 0;
 
-      // Apply smoothing
+      // smoothing control
       for (let i = 0; i < positions.count; i++) {
         const x = positions.getX(i);
         const y = positions.getY(i);
@@ -352,11 +348,9 @@ function TerrainMesh({
 
       const geometry = geometryRef.current;
       const positions = geometry.attributes.position;
-
-      // Convert world point to local space
       const localPoint = meshRef.current.worldToLocal(point.clone());
 
-      // Find closest vertex
+      // closest vertex
       let closestIndex = 0;
       let closestDistance = Infinity;
 
@@ -371,7 +365,7 @@ function TerrainMesh({
         }
       }
 
-      // Apply brush effect
+      // brush control
       const brushRadius = brushSettings.size;
 
       if (brushSettings.mode === 'smooth') {
@@ -403,7 +397,7 @@ function TerrainMesh({
                 break;
             }
 
-            // Clamp height
+            // clamp for ref
             heightData.current[i] = Math.max(
               -settings.maxHeight,
               Math.min(settings.maxHeight, heightData.current[i])
@@ -412,7 +406,6 @@ function TerrainMesh({
         }
       }
 
-      // Update geometry
       for (let i = 0; i < positions.count; i++) {
         positions.setZ(i, heightData.current[i]);
       }
@@ -498,11 +491,10 @@ function Scene({ brushMode, brushSize, brushStrength }: ThreeSceneProps) {
     wireframe: false,
   });
 
-  // Updated brush settings to use props from control panel
   const brushSettings = useMemo<BrushSettings>(
     () => ({
       size: brushSize || 10,
-      strength: (brushStrength || 50) / 100, // Convert percentage to decimal
+      strength: (brushStrength || 50) / 100,
       falloff: 2,
       mode: brushMode || 'raise',
       targetHeight: 5,
@@ -536,7 +528,6 @@ function Scene({ brushMode, brushSize, brushStrength }: ThreeSceneProps) {
 
       raycaster.current.setFromCamera(new THREE.Vector2(x, y), camera);
 
-      // Create a plane at y=0 for intersection
       const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
       const intersectPoint = new THREE.Vector3();
 
@@ -566,7 +557,7 @@ function Scene({ brushMode, brushSize, brushStrength }: ThreeSceneProps) {
     };
   }, [gl, handleMouseMove]);
 
-  // Set up scene
+  // Comp scene
   useEffect(() => {
     scene.fog = new THREE.FogExp2('#e1c4a4', 0.0008);
     scene.background = new THREE.Color('#87CEEB');
@@ -576,6 +567,9 @@ function Scene({ brushMode, brushSize, brushStrength }: ThreeSceneProps) {
     <>
       <DesertSky />
       <ambientLight intensity={0.3} />
+      <EffectComposer>
+        <Bloom intensity={0.5} luminanceThreshold={0.85} luminanceSmoothing={0.4} />
+      </EffectComposer>
       <directionalLight
         position={[
           skySettings.sunPositionX * 50,

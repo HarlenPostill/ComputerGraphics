@@ -1,8 +1,8 @@
-"use client";
-import React, { forwardRef, useRef, useEffect } from "react";
-import * as THREE from "three";
-import { extend, useFrame } from "@react-three/fiber";
-import { shaderMaterial } from "@react-three/drei";
+'use client';
+import React, { forwardRef, useRef, useEffect } from 'react';
+import * as THREE from 'three';
+import { extend, useFrame } from '@react-three/fiber';
+import { shaderMaterial } from '@react-three/drei';
 
 const sandParticlesMaterial = shaderMaterial(
   {
@@ -87,13 +87,13 @@ const sandParticlesMaterial = shaderMaterial(
       return value;
     }
 
-    // Function specifically for cloud patterns
+    // Cloud patterns
     float cloudNoise(vec2 p) {
       float value = 0.0;
       float amplitude = 0.5;
       float frequency = 1.0;
       
-      // Use fewer octaves for smoother clouds
+      // Fewer octaves for smoother clouds
       for (int i = 0; i < 4; i++) {
         value += amplitude * noise(p * frequency);
         frequency *= 2.0;
@@ -170,7 +170,7 @@ interface SandParticlesProps {
   cloudCoverage?: number;
 }
 
-declare module "@react-three/fiber" {
+declare module '@react-three/fiber' {
   interface ThreeElements {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sandParticlesMaterial: any;
@@ -178,10 +178,7 @@ declare module "@react-three/fiber" {
 }
 
 // eslint-disable-next-line react/display-name
-export const SandParticlesEffect = forwardRef<
-  THREE.ShaderMaterial,
-  SandParticlesProps
->(
+export const SandParticlesEffect = forwardRef<THREE.ShaderMaterial, SandParticlesProps>(
   (
     {
       baseTexture,
@@ -203,7 +200,7 @@ export const SandParticlesEffect = forwardRef<
 
     useEffect(() => {
       if (ref) {
-        if (typeof ref === "function") {
+        if (typeof ref === 'function') {
           ref(localRef.current);
         } else {
           ref.current = localRef.current;
@@ -211,7 +208,7 @@ export const SandParticlesEffect = forwardRef<
       }
     }, [ref]);
 
-    useFrame((state) => {
+    useFrame(state => {
       if (localRef.current) {
         localRef.current.uniforms.time.value = state.clock.getElapsedTime();
       }

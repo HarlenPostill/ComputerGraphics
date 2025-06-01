@@ -40,8 +40,32 @@ export default function Home() {
       {!showTerrain ? (
         <>
           <TitleScene />
-          <div style={{ width: '100%', position: 'absolute', height: '100%', top: 0, left: 0, justifyContent: 'center', alignItems: 'center' }}>
-            <button onClick={handleCreateTerrainClick}>Create Terrain</button>
+          <div
+            style={{
+              width: '100%',
+              position: 'absolute',
+              height: '100%',
+              top: 0,
+              left: 0,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <button
+              style={{
+                fontSize: 60,
+                backgroundColor: '#EAF0F0',
+                color: '#434D4D',
+                textTransform: 'uppercase',
+                fontWeight: 'bold',
+                padding: 20,
+                borderRadius: 10,
+                border: '8px solid #9CA8A8',
+                cursor: 'pointer',
+              }}
+              onClick={handleCreateTerrainClick}>
+              Create New Desert
+            </button>
           </div>
         </>
       ) : (
